@@ -8,7 +8,8 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
 				       at::Tensor input_lengths,
 				       at::Tensor labels,
 				       at::Tensor label_lengths,
-				       int blank_label = 0)
+				       int blank_label = 0,
+				       bool want_gradients = true)
 {
     auto is_cuda = activations.type().is_cuda();
    
@@ -70,10 +71,14 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
    
     at::Tensor workspace = activations.type().toScalarType(at::kByte).tensor(workspace_size);
 
-    at::Tensor costs = activations.type().toScalarType(at::kFloat).tensor(batch_size);
-    at::Tensor gradients = activations.type().toScalarType(at::kFloat).tensor(activations.sizes());
+    at::Tensor costs = labels.type().toScalarType(at::kFloat).tensor(batch_size); // always CPU
+    at::Tensor gradients;
+    if (want_gradients)
+       gradients = activations.type().toScalarType(at::kFloat).tensor(activations.sizes());
+    else
+       gradients = activations.type().toScalarType(at::kFloat).tensor(0);
 
-    status = compute_ctc_loss(activations.data<float>(), gradients.data<float>(),
+    status = compute_ctc_loss(activations.data<float>(), (want_gradients ? gradients.data<float>() : NULL),
 			      labels.data<int>(), label_lengths.data<int>(),
 			      input_lengths.data<int>(), alphabet_size,
 			      batch_size, costs.data<float>(),
