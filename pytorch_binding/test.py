@@ -80,7 +80,8 @@ class TestWarpCTC(unittest.TestCase):
         label_lengths = torch.IntTensor([5, 4])
         lengths = torch.IntTensor([5, 5])
 
-        scores = warpctc.CTCFunction.apply(activations, lengths, labels, label_lengths, 5) # last argument is blank_label
+        ctcloss = warpctc.CTCLoss(reduce=False, blank_label = 5)
+        scores = ctcloss(activations, lengths, labels, label_lengths)
 
         scores.sum().backward()
 
