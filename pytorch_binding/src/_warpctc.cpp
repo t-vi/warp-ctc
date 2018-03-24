@@ -101,6 +101,7 @@ ctcStatus_t compute_ctc_loss(const float* const activations,
 }
 
 
-PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
+PYBIND11_MODULE(_warpctc, m) {
+  m.attr("__name__") = "warpctc._warpctc";
   m.def("ctc", &ctc, "CTC");
 }
