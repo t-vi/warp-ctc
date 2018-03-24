@@ -1,8 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command, distutils
 from torch.utils.cpp_extension import BuildExtension, CppExtension
 import platform
 import os
 import subprocess, shutil
+import distutils.command.clean
+import distutils.command.build
 
 IS_WINDOWS = (platform.system() == 'Windows')
 IS_DARWIN = (platform.system() == 'Darwin')
@@ -26,7 +28,38 @@ def build_warpctc_so():
     os.makedirs('warpctc/lib', exist_ok=True)
     shutil.copy('build/lib/libwarpctc.so','warpctc/lib/')
 
-build_warpctc_so()
+
+class clean(distutils.command.clean.clean):
+
+    def run(self):
+        import glob
+        remove = ['build', 'dist', '*.egg-info', 'warpctc/lib', 'warpctc/__pycache__']
+        for wildcard in remove:
+            for filename in glob.glob(wildcard):
+                try:
+                    os.remove(filename)
+                except OSError:
+                    shutil.rmtree(filename, ignore_errors=True)
+
+        # It's an old-style class in Python 2.7...
+        distutils.command.clean.clean.run(self)
+
+class build_deps(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        build_warpctc_so()
+        
+class build(distutils.command.build.build):
+    sub_commands = [
+        ('build_deps', lambda self: True),
+    ] + distutils.command.build.build.sub_commands
 
 setup(
     name='warpctc',
@@ -42,5 +75,9 @@ setup(
     package_data={'warpctc':['lib/libwarpctc.so']},
     
     cmdclass={
-        'build_ext': BuildExtension
+        'build': build,
+        'build_deps': build_deps,
+        'build_ext': BuildExtension,
+        'clean': clean,
+        
     })
