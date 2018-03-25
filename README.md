@@ -24,5 +24,7 @@ python3 tests/test.py -v
 
 Note that this is not the same as [Sean Naren's Warp-CTC PyTorch
 wrapper](https://github.com/SeanNaren/warp-ctc).
-I have tried to stay close to the modern way of doing things and
-use ATen - this had not been available when Sean made bindings.
+I have tried to make the bindings look as PyTorch-y as possible in terms
+of interface and also to stay close to the modern way of doing things
+in the internals and use ATen - this had not been available when Sean
+made bindings.
