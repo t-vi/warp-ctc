@@ -1,3 +1,10 @@
+// PyTorch bindings (c) 2018 by Thomas Viehmann <tv@lernapparat.de>
+// All rights reserved. Licensed under the
+// Apache License,  Version 2.0, January 2004
+// see LICENSE in root directory
+
+
+
 #include <torch/torch.h>
 #include <ATen/TensorUtils.h>
 #include <tuple>
@@ -74,7 +81,7 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
     at::Tensor costs = labels.type().toScalarType(at::kFloat).tensor(batch_size); // always CPU
     at::Tensor gradients;
     if (want_gradients)
-       gradients = activations.type().toScalarType(at::kFloat).tensor(activations.sizes());
+       gradients = activations.type().toScalarType(at::kFloat).tensor(activations.sizes()).zero_();
     else
        gradients = activations.type().toScalarType(at::kFloat).tensor(0);
 
