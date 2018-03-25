@@ -80,7 +80,7 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
 
     at::Tensor costs = labels.type().toScalarType(at::kFloat).tensor(batch_size); // always CPU
     at::Tensor gradients;
-    if (want_gradients)
+    if (want_gradients) // we need to initialize to 0 to avoid NaNs in the "unused parts"
        gradients = activations.type().toScalarType(at::kFloat).tensor(activations.sizes()).zero_();
     else
        gradients = activations.type().toScalarType(at::kFloat).tensor(0);
