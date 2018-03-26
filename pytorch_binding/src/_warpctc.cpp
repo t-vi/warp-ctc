@@ -48,8 +48,8 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
     const auto alphabet_size = activations.size(2);
     checkSize("input_lengths", input_lengths_arg, 0, batch_size);
     checkSize("label_lengths", label_lengths_arg, 0, batch_size);
-    // check that labels.size(0) == label_lengths.sum()?
-
+    const auto total_label_length = label_lengths.toType(at::kLong).sum().toCLong();
+    checkSize("labels", labels_arg, 0, total_label_length);
 
     ctcOptions options{};
     options.blank_label = blank_label;
