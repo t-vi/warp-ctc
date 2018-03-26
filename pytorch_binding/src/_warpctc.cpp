@@ -7,6 +7,7 @@
 
 #include <torch/torch.h>
 #include <ATen/TensorUtils.h>
+#include <ATen/ATenAssert.h>
 #include <tuple>
 #include <iostream>
 #include "ctc.h"
@@ -19,27 +20,37 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
 				       bool want_gradients = true)
 {
     auto is_cuda = activations.type().is_cuda();
-   
+
     auto activations_arg = at::TensorArg(activations, "activations", 0);
     checkScalarType("activations", activations_arg, at::kFloat);
     checkContiguous("activations", activations_arg);
+    checkDim("activations", activations_arg, 3);
 
     auto input_lengths_arg = at::TensorArg(input_lengths, "input_lengths", 1);
     checkScalarType("input_lengths", input_lengths_arg, at::kInt);
     checkContiguous("input_lengths", input_lengths_arg);
+    checkDim("input_lengths", input_lengths_arg, 1);
+    AT_ASSERT(! input_lengths.type().is_cuda(), "input_lengths must be on CPU")
 
     auto labels_arg = at::TensorArg(labels, "labels", 2);
     checkScalarType("labels", labels_arg, at::kInt);
     checkContiguous("labels", labels_arg);
+    checkDim("labels", labels_arg, 1);
+    AT_ASSERT(! labels.type().is_cuda(), "labels must be on CPU")
 
     auto label_lengths_arg = at::TensorArg(label_lengths, "label_lengths", 3);
     checkScalarType("label_lengths", label_lengths_arg, at::kInt);
     checkContiguous("label_lengths", label_lengths_arg);
+    checkDim("label_lengths", label_lengths_arg, 1);
+    AT_ASSERT(! label_lengths.type().is_cuda(), "label_lengths must be on CPU")
 
-    // check dimensions?
-    const auto batch_size = input_lengths.size(0);
+    const auto batch_size = activations.size(1);
     const auto alphabet_size = activations.size(2);
-   
+    checkSize("input_lengths", input_lengths_arg, 0, batch_size);
+    checkSize("label_lengths", label_lengths_arg, 0, batch_size);
+    // check that labels.size(0) == label_lengths.sum()?
+
+
     ctcOptions options{};
     options.blank_label = blank_label;
     if (! is_cuda) {
