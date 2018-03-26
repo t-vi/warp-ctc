@@ -22,9 +22,10 @@ You can test with
 python3 tests/test.py -v
 ```
 
-Note that this is not the same as [Sean Naren's Warp-CTC PyTorch
-wrapper](https://github.com/SeanNaren/warp-ctc).
+Note that this is not the same as [Sean Naren's great Warp-CTC PyTorch
+wrapper](https://github.com/SeanNaren/warp-ctc), which is the most
+popular binding for CTC Loss I am aware of.
 I have tried to make the bindings look as PyTorch-y as possible in terms
-of interface and also to stay close to the modern way of doing things
-in the internals and use ATen - this had not been available when Sean
-made bindings.
+of interface, have checks on all tensor sizes, and also to stay close to
+the modern way of doing things in the internals by using ATen. (Sean
+created his set of bindings when PyTorch was in a much earlier stage.)
