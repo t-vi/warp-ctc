@@ -40,7 +40,7 @@ class CTCFunction(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_out):
         # check whether grad_in is zero
-        gradients, = ctx.saved_variables
+        gradients, = ctx.saved_tensors
         if gradients.is_cuda:
             grad_out = grad_out.cuda(device=gradients.get_device())
         gradients = gradients * grad_out.view(1, -1, 1)

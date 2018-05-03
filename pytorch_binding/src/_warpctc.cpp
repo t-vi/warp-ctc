@@ -7,7 +7,7 @@
 
 #include <torch/torch.h>
 #include <ATen/TensorUtils.h>
-#include <ATen/ATenAssert.h>
+#include <ATen/Error.h>
 #include <tuple>
 #include <iostream>
 #include "ctc.h"
@@ -84,7 +84,7 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
 				options, &workspace_size);
 
     if (status != CTC_STATUS_SUCCESS) {
-       at::runtime_error(ctcGetStatusString(status));
+       AT_ERROR(ctcGetStatusString(status));
     }
    
     at::Tensor workspace = activations.type().toScalarType(at::kByte).tensor(workspace_size);
@@ -103,7 +103,7 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
 			      workspace.data_ptr(), options);
 
     if (status != CTC_STATUS_SUCCESS) {
-       at::runtime_error(ctcGetStatusString(status));
+       AT_ERROR(ctcGetStatusString(status));
     }
     return std::make_tuple(costs, gradients);
 

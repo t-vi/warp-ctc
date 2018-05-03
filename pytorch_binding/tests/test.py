@@ -130,6 +130,7 @@ class TestWarpCTC(unittest.TestCase):
                         msg="gradient of inf cost should not be NaN")
 
     def grad_test(self, cuda=False):
+        device = torch.device("cuda:0" if cuda else "cpu")
         problem_sizes = [[20, 50, 15, 1, 10**(-2.5)],
                          [5, 10, 5, 65, 1e-2]]
         # n.b. warpctc's c++ cpu tests use squared relative difference
@@ -137,8 +138,8 @@ class TestWarpCTC(unittest.TestCase):
         for alphabet_size, seq_len, label_len, minibatch, tol in problem_sizes:
             acts = torch.rand(seq_len, minibatch, alphabet_size,
                               requires_grad=True,
-                              dtype=(torch.cuda.float32 if cuda
-                                     else torch.float32))
+                              dtype=torch.float32,
+                              device=device)
             sizes = torch.IntTensor(minibatch).fill_(seq_len)
             label_lengths = torch.IntTensor(minibatch).fill_(label_len)
             labels = torch.IntTensor(label_len,
