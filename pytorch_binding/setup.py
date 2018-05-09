@@ -16,6 +16,14 @@ IS_WINDOWS = (platform.system() == 'Windows')
 IS_DARWIN = (platform.system() == 'Darwin')
 
 
+def shared_object_ext():
+    if IS_WINDOWS:
+        return '.dll'
+    elif IS_DARWIN:
+        return '.dylib'
+    return '.so'
+
+
 def make_relative_rpath(path):
     if IS_DARWIN:
         return '-Wl,-rpath,@loader_path/' + path
@@ -32,7 +40,7 @@ def build_warpctc_so():
     res = subprocess.run(['make'], cwd='build/lib')
     assert res.returncode == 0, "Error"
     os.makedirs('warpctc/lib', exist_ok=True)
-    shutil.copy('build/lib/libwarpctc.so', 'warpctc/lib/')
+    shutil.copy('build/lib/libwarpctc' + shared_object_ext(), 'warpctc/lib/')
 
 
 class Clean(distutils.command.clean.clean):
@@ -82,7 +90,7 @@ setup(
                      extra_link_args=[make_relative_rpath('lib')])
     ],
     packages=find_packages(exclude=['tests']),
-    package_data={'warpctc': ['lib/libwarpctc.so']},
+    package_data={'warpctc': ['lib/libwarpctc' + shared_object_ext()]},
 
     cmdclass={
         'build': Build,
