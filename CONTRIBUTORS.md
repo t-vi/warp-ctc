@@ -1,4 +1,5 @@
-warpctc was originally created by Baidu
+warpctc was originally created by Baidu.
+
 These PyTorch bindings have been created by Thomas Viehmann <tv@lernapparat.de>.
 
 The following people contributed patches (in alphabetical order):
