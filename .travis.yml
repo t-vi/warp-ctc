@@ -1,0 +1,11 @@
+sudo: required
+dist: trusty
+language: python
+cache: pip
+python:
+  - "3.6"
+install:
+  - sudo apt-get update
+  - pip install -q http://download.pytorch.org/whl/cu91/torch-0.4.0-cp36-cp36m-linux_x86_64.whl
+script:
+  - cd pytorch_binding && python3 setup.py bdist_wheel
