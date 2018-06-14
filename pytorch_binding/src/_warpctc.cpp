@@ -6,11 +6,17 @@
 
 
 #include <torch/torch.h>
+#include <torch/csrc/Exceptions.h>
 #include <ATen/TensorUtils.h>
 #include <ATen/Error.h>
 #include <tuple>
 #include <iostream>
 #include "ctc.h"
+
+// pytorch 0.4 compatibility
+#ifndef AT_CHECK
+#define AT_CHECK AT_ASSERT
+#endif
 
 std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
 				       at::Tensor input_lengths,
@@ -19,6 +25,7 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
 				       int blank_label = 0,
 				       bool want_gradients = true)
 {
+  try {
     auto is_cuda = activations.type().is_cuda();
 
     auto activations_arg = at::TensorArg(activations, "activations", 0);
@@ -30,19 +37,19 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
     checkScalarType("input_lengths", input_lengths_arg, at::kInt);
     checkContiguous("input_lengths", input_lengths_arg);
     checkDim("input_lengths", input_lengths_arg, 1);
-    AT_ASSERT(! input_lengths.type().is_cuda(), "input_lengths must be on CPU");
+    AT_CHECK(! input_lengths.type().is_cuda(), "input_lengths must be on CPU");
 
     auto labels_arg = at::TensorArg(labels, "labels", 2);
     checkScalarType("labels", labels_arg, at::kInt);
     checkContiguous("labels", labels_arg);
     checkDim("labels", labels_arg, 1);
-    AT_ASSERT(! labels.type().is_cuda(), "labels must be on CPU");
+    AT_CHECK(! labels.type().is_cuda(), "labels must be on CPU");
 
     auto label_lengths_arg = at::TensorArg(label_lengths, "label_lengths", 3);
     checkScalarType("label_lengths", label_lengths_arg, at::kInt);
     checkContiguous("label_lengths", label_lengths_arg);
     checkDim("label_lengths", label_lengths_arg, 1);
-    AT_ASSERT(! label_lengths.type().is_cuda(), "label_lengths must be on CPU");
+    AT_CHECK(! label_lengths.type().is_cuda(), "label_lengths must be on CPU");
 
     const auto batch_size = activations.size(1);
     const auto alphabet_size = activations.size(2);
@@ -84,7 +91,7 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
 				options, &workspace_size);
 
     if (status != CTC_STATUS_SUCCESS) {
-       AT_ERROR(ctcGetStatusString(status));
+       AT_ERROR("warp_ctc error: ", ctcGetStatusString(status));
     }
    
     at::Tensor workspace = activations.type().toScalarType(at::kByte).tensor(workspace_size);
@@ -103,7 +110,7 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
 			      workspace.data_ptr(), options);
 
     if (status != CTC_STATUS_SUCCESS) {
-       AT_ERROR(ctcGetStatusString(status));
+       AT_ERROR("warp_ctc error: ", ctcGetStatusString(status));
     }
     return std::make_tuple(costs, gradients);
 
@@ -119,8 +126,9 @@ ctcStatus_t compute_ctc_loss(const float* const activations,
                              void *workspace,
                              ctcOptions options);
 */
-
-
+  } catch (const at::Error &e) {
+    throw (torch::ValueError(e.what_without_backtrace()));
+  }
 }
 
 
