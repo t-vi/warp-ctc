@@ -42,7 +42,7 @@ struct CTAReduce {
         T shuff;
         for (int offset = warp_size / 2; offset > 0; offset /= 2) {
 #if __CUDACC_VER_MAJOR__ >= 9
-            shuff = __shfl_down_sync(0xFFFFFFFF, x, offset);
+            shuff = __shfl_down_sync(0u, x, offset);
 #else
             shuff = __shfl_down(x, offset);
 #endif

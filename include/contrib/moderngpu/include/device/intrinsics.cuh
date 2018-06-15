@@ -113,7 +113,7 @@ __device__ __forceinline__ float shfl_up(float var,
 
 #if __CUDA_ARCH__ >= 300
 #if __CUDACC_VER_MAJOR__ >= 9
-	var = __shfl_up_sync(0xFFFFFFFF, var, delta, width);
+	var = __shfl_up_sync(0u, var, delta, width);
 #else
 	var = __shfl_up(var, delta, width);
 #endif
@@ -127,8 +127,8 @@ __device__ __forceinline__ double shfl_up(double var,
 #if __CUDA_ARCH__ >= 300
 	int2 p = mgpu::double_as_int2(var);
 #if __CUDACC_VER_MAJOR__ >= 9
-	p.x = __shfl_up_sync(0xFFFFFFFF, p.x, delta, width);
-	p.y = __shfl_up_sync(0xFFFFFFFF, p.y, delta, width);
+	p.x = __shfl_up_sync(0u, p.x, delta, width);
+	p.y = __shfl_up_sync(0u, p.y, delta, width);
 #else
 	p.x = __shfl_up(p.x, delta, width);
 	p.y = __shfl_up(p.y, delta, width);
@@ -150,7 +150,7 @@ MGPU_DEVICE int shfl_add(int x, int offset, int width = WARP_SIZE) {
 		"{.reg .s32 r0;"
 		".reg .pred p;"
 #if __CUDACC_VER_MAJOR__ >= 9
-		"shfl.sync.up.b32 r0|p, %1, %2, %3, 0xffffffff;"
+		"shfl.sync.up.b32 r0|p, %1, %2, %3, 0u;"
 #else
 		"shfl.up.b32 r0|p, %1, %2, %3;"
 #endif
@@ -169,7 +169,7 @@ MGPU_DEVICE int shfl_max(int x, int offset, int width = WARP_SIZE) {
 		"{.reg .s32 r0;"
 		".reg .pred p;"
 #if __CUDACC_VER_MAJOR__ >= 9
-		"shfl.sync.up.b32 r0|p, %1, %2, %3, 0xffffffff;"
+		"shfl.sync.up.b32 r0|p, %1, %2, %3, 0u;"
 #else
 		"shfl.up.b32 r0|p, %1, %2, %3;"
 #endif
