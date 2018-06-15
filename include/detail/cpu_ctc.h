@@ -163,6 +163,8 @@ template<typename ProbT>
 void
 CpuCTC<ProbT>::softmax(const ProbT* const activations, ProbT* probs,
                        const int* const input_lengths) {
+    ProbT min_T = std::numeric_limits<ProbT>::min();
+
 #pragma omp parallel for
     for (int mb = 0; mb < minibatch_; ++mb) {
         for(int c = 0; c < input_lengths[mb]; ++c) {
@@ -179,6 +181,9 @@ CpuCTC<ProbT>::softmax(const ProbT* const activations, ProbT* probs,
 
             for(int r = 0; r < alphabet_size_; ++r) {
                 probs[r + col_offset] /= denom;
+                if (probs[r + col_offset] < min_T) {
+                    probs[r + col_offset] = min_T;
+                }
             }
         }
     }
