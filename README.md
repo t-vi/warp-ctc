@@ -9,6 +9,9 @@ Warp-CTC was created by Baidu, see [the original
 README](README.orig.md) and
 [github project](https://github.com/baidu-research/warp-ctc).
 
+**Very important: please do use the same compiler as PyTorch (gcc-5
+seems to be a good choice for Linux), or you will see segfaults.** 
+
 The idea is to
 
 ```
@@ -21,6 +24,7 @@ You can test with
 ```
 python3 tests/test.py -v
 ```
+
 
 Note that this is not the same as [Sean Naren's great Warp-CTC PyTorch
 wrapper](https://github.com/SeanNaren/warp-ctc), which is the most
