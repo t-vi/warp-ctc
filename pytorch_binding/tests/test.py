@@ -176,6 +176,19 @@ class TestWarpCTC(unittest.TestCase):
     def test_grad_gpu(self):
         self.grad_test(cuda=True)
 
+    def test_length_average(self):
+        seq_len = 2
+        activations = torch.tensor(
+            [[0.1, 0.6, 0.1, 0.1, 0.1],
+             [0.1, 0.1, 0.6, 0.1, 0.1]], requires_grad=True).unsqueeze(1)
+        labels = torch.IntTensor([1, 2])
+        label_lengths = torch.IntTensor([2])
+        input_lengths = torch.IntTensor([seq_len])
+        loss = warpctc.ctc_loss(activations, input_lengths, labels,
+                                label_lengths, reduce=True, size_average=True,
+                                length_average=True, blank_label=0)
+        loss.backward()
+
 
 if __name__ == "__main__":
     unittest.main()

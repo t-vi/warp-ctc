@@ -22,11 +22,11 @@ class CTCFunction(torch.autograd.Function):
                                         want_gradient)
         if length_average:
             # we use label_lengths to not deal with blanks
-            costs = costs / label_lengths
+            costs = costs / label_lengths.float()
             if want_gradient:
                 if gradients.is_cuda:
                     label_lengths = label_lengths.cuda(device=gradients.device)
-                gradients /= label_lengths.view(1, -1, 1)
+                gradients /= label_lengths.view(1, -1, 1).float()
         if reduce:
             if size_average:
                 costs = costs.mean()
