@@ -1,3 +1,9 @@
+# Notice
+
+**As of today, PyTorch (master) comes with its own implementation of the [CTC loss](https://pytorch.org/docs/master/nn.html#torch.nn.CTCLoss). 
+  It has CuDNN support and fast CUDA and reasonably fast CPU backend.
+  I recommend using that going forward.**
+
 # warpctc module for PyTorch
 
 *Thomas Viehmann <tv@lernapparat.de>*
