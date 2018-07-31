@@ -155,24 +155,28 @@ class TestWarpCTC(unittest.TestCase):
     def test_small_cpu(self):
         self.small_test(cuda=False)
 
+    @unittest.skipIf(not torch.cuda.is_available(), "needs CUDA")
     def test_small_gpu(self):
         self.small_test(cuda=True)
 
     def test_options_cpu(self):
         self.options_test(cuda=False)
 
+    @unittest.skipIf(not torch.cuda.is_available(), "needs CUDA")
     def test_options_gpu(self):
         self.options_test(cuda=True)
 
     def test_inf_cpu(self):
         self.inf_test(cuda=False)
 
+    @unittest.skipIf(not torch.cuda.is_available(), "needs CUDA")
     def test_inf_gpu(self):
         self.inf_test(cuda=True)
 
     def test_grad_cpu(self):
         self.grad_test(cuda=False)
 
+    @unittest.skipIf(not torch.cuda.is_available(), "needs CUDA")
     def test_grad_gpu(self):
         self.grad_test(cuda=True)
 
