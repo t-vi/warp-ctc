@@ -9,6 +9,7 @@
 #include <torch/csrc/Exceptions.h>
 #include <ATen/TensorUtils.h>
 #include <ATen/Error.h>
+#include <ATen/cuda/CUDAContext.h>
 #include <tuple>
 #include <iostream>
 #include "ctc.h"
@@ -71,7 +72,7 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
     }
     else {
         options.loc = CTC_GPU;
-        options.stream = at::globalContext().getCurrentCUDAStream();
+        options.stream = at::cuda::getCurrentCUDAStream();
     }
    
    
