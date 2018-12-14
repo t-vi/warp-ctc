@@ -5,10 +5,9 @@
 
 
 
-#include <torch/torch.h>
-#include <torch/csrc/Exceptions.h>
+#include <torch/extension.h>
 #include <ATen/TensorUtils.h>
-#include <ATen/Error.h>
+#include <ATen/cuda/CUDAStream.h>
 #include <tuple>
 #include <iostream>
 #include "ctc.h"
@@ -55,7 +54,7 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
     const auto alphabet_size = activations.size(2);
     checkSize("input_lengths", input_lengths_arg, 0, batch_size);
     checkSize("label_lengths", label_lengths_arg, 0, batch_size);
-    const auto total_label_length = label_lengths.toType(at::kLong).sum().toCLong();
+    const auto total_label_length = label_lengths.toType(at::kLong).sum().item<int64_t>();
     checkSize("labels", labels_arg, 0, total_label_length);
 
     ctcOptions options{};
@@ -71,7 +70,7 @@ std::tuple<at::Tensor, at::Tensor> ctc(at::Tensor activations,
     }
     else {
         options.loc = CTC_GPU;
-        options.stream = at::globalContext().getCurrentCUDAStream();
+        options.stream = at::cuda::getCurrentCUDAStream();
     }
    
    
@@ -94,14 +93,14 @@ ctcStatus_t get_workspace_size(const int* const label_lengths,
        AT_ERROR("warp_ctc error: ", ctcGetStatusString(status));
     }
    
-    at::Tensor workspace = activations.type().toScalarType(at::kByte).tensor(workspace_size);
+    at::Tensor workspace = torch::empty({(int64_t) workspace_size}, activations.options().dtype(at::kByte));
 
-    at::Tensor costs = labels.type().toScalarType(at::kFloat).tensor(batch_size); // always CPU
+    at::Tensor costs = torch::empty({batch_size}, labels.options().dtype(at::kFloat)); // always CPU
     at::Tensor gradients;
     if (want_gradients) // we need to initialize to 0 to avoid NaNs in the "unused parts"
-       gradients = activations.type().toScalarType(at::kFloat).tensor(activations.sizes()).zero_();
+      gradients = torch::zeros_like(activations);
     else
-       gradients = activations.type().toScalarType(at::kFloat).tensor(0);
+      gradients = torch::zeros({0}, activations.options());
 
     status = compute_ctc_loss(activations.data<float>(), (want_gradients ? gradients.data<float>() : NULL),
 			      labels.data<int>(), label_lengths.data<int>(),

@@ -4,13 +4,15 @@
 # see LICENSE in root directory
 
 from setuptools import setup, find_packages, Command, distutils
-from torch.utils.cpp_extension import BuildExtension, CppExtension
+from torch.utils.cpp_extension import BuildExtension, CppExtension,\
+    CUDAExtension
 import platform
 import os
 import subprocess
 import shutil
 import distutils.command.clean
 import distutils.command.build
+import torch
 
 IS_WINDOWS = (platform.system() == 'Windows')
 IS_DARWIN = (platform.system() == 'Darwin')
@@ -22,6 +24,10 @@ def shared_object_ext():
     elif IS_DARWIN:
         return '.dylib'
     return '.so'
+
+
+def pytorch_lib_dir():
+    return os.path.join(os.path.dirname(torch.__file__), 'lib')
 
 
 def make_relative_rpath(path):
@@ -79,15 +85,27 @@ class Build(distutils.command.build.build):
     ] + distutils.command.build.build.sub_commands
 
 
+def get_extension():
+    if torch.cuda.is_available():
+        res = CUDAExtension('warpctc._warpctc', ['src/_warpctc.cpp'],
+                            include_dirs=['../include'],
+                            library_dirs=['build/lib', pytorch_lib_dir()],
+                            libraries=['warpctc', 'torch', 'caffe2'],
+                            extra_link_args=[make_relative_rpath('lib')])
+    else:
+        res = CppExtension('warpctc._warpctc', ['src/_warpctc.cpp'],
+                           include_dirs=['../include'],
+                           library_dirs=['build/lib', pytorch_lib_dir()],
+                           libraries=['warpctc', 'torch', 'caffe2'],
+                           extra_link_args=[make_relative_rpath('lib')])
+    return res
+
+
 setup(
     name='warpctc',
+    version='0.0.1',
     ext_modules=[
-        # apparently pybind does not support submodules like warpctc._warpctc
-        CppExtension('warpctc._warpctc', ['src/_warpctc.cpp'],
-                     include_dirs=['../include'],
-                     library_dirs=['build/lib'],
-                     libraries=['warpctc'],
-                     extra_link_args=[make_relative_rpath('lib')])
+        get_extension()
     ],
     packages=find_packages(exclude=['tests']),
     package_data={'warpctc': ['lib/libwarpctc' + shared_object_ext()]},
